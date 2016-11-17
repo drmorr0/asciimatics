@@ -1202,28 +1202,31 @@ class Screen(with_metaclass(ABCMeta, _AbstractCanvas)):
         self._idle_frame_count = 0
         self.clear()
 
-    def draw_next_frame(self, repeat=True):
+    def draw_next_frame(self, repeat=True, handle_events=True, frame_delay=1000000):
         """
         Draw the next frame in the currently configured Scenes. You must call
         :py:meth:`.set_scenes` before using this for the first time.
 
         :param repeat: Whether to repeat the Scenes once it has reached the end.
             Defaults to True.
+        :param handle_events: Whether events should be handled here or elsewhere
 
         :raises StopApplication: if the application should be terminated.
         """
         scene = self._scenes[self._scene_index]
         try:
             # Check for an event now and remember for refresh reasons.
-            event = self.get_event()
-            got_event = event is not None
-
-            # Now process all the input events
-            while event is not None:
-                event = scene.process_event(event)
-                if event is not None and self._unhandled_input is not None:
-                    self._unhandled_input(event)
+            got_event = False
+            if handle_events:
                 event = self.get_event()
+                got_event = event is not None
+
+                # Now process all the input events
+                while event is not None:
+                    event = scene.process_event(event)
+                    if event is not None and self._unhandled_input is not None:
+                        self._unhandled_input(event)
+                    event = self.get_event()
 
             # Only bother with a refresh if there was an event to process or
             # we have to refresh due to the refresh limit required for an
@@ -1231,7 +1234,7 @@ class Screen(with_metaclass(ABCMeta, _AbstractCanvas)):
             self._frame += 1
             self._idle_frame_count -= 1
             if got_event or self._idle_frame_count <= 0:
-                self._idle_frame_count = 1000000
+                self._idle_frame_count = frame_delay
                 for effect in scene.effects:
                     # Update the effect and delete if needed.
                     effect.update(self._frame)

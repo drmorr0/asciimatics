@@ -14,6 +14,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from asciimatics.effects import Effect
 from asciimatics.event import KeyboardEvent, MouseEvent
 from asciimatics.exceptions import Highlander
+from asciimatics.palette import DEFAULT_PALETTE
 from asciimatics.screen import Screen, Canvas
 
 
@@ -63,51 +64,10 @@ class Frame(Effect):
     within your Frame.
     """
 
-    # Colour palette for the widgets within the Frame.
-    palette = {
-        "background":
-            (Screen.COLOUR_WHITE, Screen.A_NORMAL, Screen.COLOUR_BLUE),
-        "shadow":
-            (Screen.COLOUR_BLACK, None, Screen.COLOUR_BLACK),
-        "disabled":
-            (Screen.COLOUR_BLACK, Screen.A_BOLD, Screen.COLOUR_BLUE),
-        "label":
-            (Screen.COLOUR_GREEN, Screen.A_BOLD, Screen.COLOUR_BLUE),
-        "borders":
-            (Screen.COLOUR_BLACK, Screen.A_BOLD, Screen.COLOUR_BLUE),
-        "scroll":
-            (Screen.COLOUR_CYAN, Screen.A_NORMAL, Screen.COLOUR_BLUE),
-        "title":
-            (Screen.COLOUR_WHITE, Screen.A_BOLD, Screen.COLOUR_BLUE),
-        "edit_text":
-            (Screen.COLOUR_WHITE, Screen.A_NORMAL, Screen.COLOUR_BLUE),
-        "focus_edit_text":
-            (Screen.COLOUR_WHITE, Screen.A_BOLD, Screen.COLOUR_CYAN),
-        "button":
-            (Screen.COLOUR_WHITE, Screen.A_NORMAL, Screen.COLOUR_BLUE),
-        "focus_button":
-            (Screen.COLOUR_WHITE, Screen.A_BOLD, Screen.COLOUR_CYAN),
-        "control":
-            (Screen.COLOUR_YELLOW, Screen.A_NORMAL, Screen.COLOUR_BLUE),
-        "selected_control":
-            (Screen.COLOUR_YELLOW, Screen.A_BOLD, Screen.COLOUR_BLUE),
-        "focus_control":
-            (Screen.COLOUR_YELLOW, Screen.A_NORMAL, Screen.COLOUR_BLUE),
-        "selected_focus_control":
-            (Screen.COLOUR_YELLOW, Screen.A_BOLD, Screen.COLOUR_CYAN),
-        "field":
-            (Screen.COLOUR_WHITE, Screen.A_NORMAL, Screen.COLOUR_BLUE),
-        "selected_field":
-            (Screen.COLOUR_YELLOW, Screen.A_BOLD, Screen.COLOUR_BLUE),
-        "focus_field":
-            (Screen.COLOUR_WHITE, Screen.A_NORMAL, Screen.COLOUR_BLUE),
-        "selected_focus_field":
-            (Screen.COLOUR_WHITE, Screen.A_BOLD, Screen.COLOUR_CYAN),
-    }
-
     def __init__(self, screen, height, width, data=None, on_load=None,
                  has_border=True, hover_focus=False, name=None, title=None,
-                 x=None, y=None, has_shadow=False, reduce_cpu=False):
+                 x=None, y=None, has_shadow=False, reduce_cpu=False, 
+                 palette=DEFAULT_PALETTE):
         """
         :param screen: The Screen that owns this Frame.
         :param width: The desired width of the Frame.
@@ -127,6 +87,7 @@ class Frame(Effect):
             a shadow when drawn.
         :param reduce_cpu: Whether to minimize CPU usage (for use on low spec
             systems).
+        :param palette: Color palette to use for this Frame
         """
         super(Frame, self).__init__()
         self._focus = 0
@@ -143,6 +104,7 @@ class Frame(Effect):
         self._title = " " + title[0:width - 4] + " " if title else ""
         self._has_shadow = has_shadow
         self._reduce_cpu = reduce_cpu
+        self.palette = palette
 
         # A unique name is needed for cloning.  Try our best to get one!
         self._name = title if name is None else name
@@ -1236,7 +1198,11 @@ class Label(Widget):
 
     @property
     def value(self):
-        return self._value
+        return self._text
+
+    @value.setter
+    def value(self, new_value):
+        self._text = new_value
 
 
 class Divider(Widget):
